@@ -1,0 +1,97 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDY2gXvr5TLlT3ypR-fAnOnydCqElxAKTKQlBGdq1wK8sX-SwdhUrsynhG0uXs0AxpAM_gdQUnzbQsCnTqzCkWCEgVqSom0o0TKFu_Tl9NGXZ49PjS2dew3iIeaiELc19M7wbB-bkaqL_YQOSKsHHqROueFp4mzFQcMlF1byhnXbzi4hOvO3dGaiQM8gb87dO7A1hycCYHCAmv1x4OK34cObyPUypA33qOg4UW32k2kPk9SaHuvDv8kjtcXPAk6rjYrEHSnI3K_4PGv';
+
+export default function Footer() {
+  return (
+    <footer className="w-full bg-primary text-on-primary">
+      <div className="container-max py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full border-2 border-on-primary/30 overflow-hidden flex-shrink-0">
+                <img src={LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-headline-sm font-bold">Nandini</span>
+            </div>
+            <p className="text-body-md opacity-80 leading-relaxed">
+              Preserving the thunderous legacy of Kateel's percussive arts. Experience the rhythm that defines our culture.
+            </p>
+            <div className="flex gap-3">
+              <a href="#" aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+                <span className="material-symbols-outlined text-xl">facebook</span>
+              </a>
+              <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+                <span className="material-symbols-outlined text-xl">photo_camera</span>
+              </a>
+              <a href="#" aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+                <span className="material-symbols-outlined text-xl">play_circle</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-5">
+            <h4 className="text-label-lg uppercase tracking-widest opacity-60 font-bold">Quick Links</h4>
+            <ul className="space-y-3">
+              {[
+                { to: '/', label: 'Home' },
+                { to: '/about', label: 'About Us' },
+                { to: '/team', label: 'Team Members' },
+                { to: '/events', label: 'Events' },
+                { to: '/book', label: 'Book Us' },
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-body-md opacity-80 hover:opacity-100 transition-opacity">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div className="space-y-5">
+            <h4 className="text-label-lg uppercase tracking-widest opacity-60 font-bold">Services</h4>
+            <ul className="space-y-3 text-body-md opacity-80">
+              <li>Temple Festival Performances</li>
+              <li>Corporate Events</li>
+              <li>Wedding Ceremonies</li>
+              <li>Cultural Workshops</li>
+              <li>Private Celebrations</li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-5">
+            <h4 className="text-label-lg uppercase tracking-widest opacity-60 font-bold">Get in Touch</h4>
+            <div className="space-y-4">
+              <div className="flex gap-3 opacity-80">
+                <span className="material-symbols-outlined flex-shrink-0">location_on</span>
+                <p className="text-body-md">Kateel Temple Road, Kateel,<br />Mangalore, Karnataka - 574148</p>
+              </div>
+              <div className="flex gap-3 opacity-80">
+                <span className="material-symbols-outlined flex-shrink-0">call</span>
+                <a href="tel:+919901933947" className="text-body-md hover:opacity-100 transition-opacity">+91 99019 33947</a>
+              </div>
+              <div className="flex gap-3 opacity-80">
+                <span className="material-symbols-outlined flex-shrink-0">mail</span>
+                <a href="mailto:nandini.chende@gmail.com" className="text-body-md hover:opacity-100 transition-opacity">nandini.chende@gmail.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-on-primary/10 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-label-md opacity-60">© 2024 Team Nandini Chende Kateel. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link to="/contact" className="text-label-md opacity-60 hover:opacity-100 transition-opacity">Contact</Link>
+            <Link to="/admin/login" className="text-label-md opacity-60 hover:opacity-100 transition-opacity">Admin</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

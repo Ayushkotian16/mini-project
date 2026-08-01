@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f9f9f9;
+    color: #1a1c1c;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .luminous-shadow {
+    box-shadow: 0 10px 30px -10px rgba(194, 24, 91, 0.08);
+  }
+  .ghost-border {
+    border: 1px solid #fce4ec;
+  }
+  .circular-frame {
+    aspect-ratio: 1/1;
+    border-radius: 9999px;
+    border: 2px solid #c2185b;
+    overflow: hidden;
+  }
+  .btn-primary {
+    @apply bg-primary text-on-primary px-6 py-3 rounded-lg font-semibold text-label-lg hover:bg-on-primary-fixed-variant transition-all active:scale-95 inline-flex items-center gap-2;
+  }
+  .btn-outline {
+    @apply border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold text-label-lg hover:bg-primary-fixed transition-all active:scale-95 inline-flex items-center gap-2;
+  }
+  .input-field {
+    @apply w-full bg-transparent border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-body-md text-on-surface outline-none transition-colors;
+  }
+  .card {
+    @apply bg-surface-container-lowest rounded-xl border border-outline-variant luminous-shadow;
+  }
+  .section-label {
+    @apply text-primary font-semibold text-label-lg uppercase tracking-widest mb-4 block;
+  }
+  .container-max {
+    @apply max-w-container-max mx-auto px-4 md:px-16;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f3f3f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #e1bec4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9b0044;
+}
