@@ -539,6 +539,11 @@ export default function BookingPage() {
                           </button>
                         )}
                       </div>
+                      {otpRequired && !otpVerified && !otpSent && (
+                        <p className="text-label-md text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mt-1 flex items-center gap-1">
+                          📞 An OTP will be sent via call or SMS. Please be ready to receive it.
+                        </p>
+                      )}
                     </div>
                     {otpRequired && otpSent && !otpVerified && (
                       <div className="md:col-span-2">

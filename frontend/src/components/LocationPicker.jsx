@@ -65,31 +65,32 @@ export default function LocationPicker({ value, onChange }) {
       });
 
       const center = value?.lat ? [value.lat, value.lng] : [KATEEL_LAT, KATEEL_LNG];
-      const map = L.map(mapContainerRef.current).setView(center, 12);
+      const map = L.map(mapContainerRef.current, { zoomControl: true }).setView(center, 13);
       mapRef.current = map;
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
         maxZoom: 19,
+        crossOrigin: true,
       }).addTo(map);
 
-      // Force Leaflet to recalculate size — fixes blank map
-      setTimeout(() => map.invalidateSize(), 100);
+      // Force size recalc after render
+      setTimeout(() => { map.invalidateSize(true); }, 200);
 
-      // Kateel temple — red marker
+      // Kateel temple — red pin 🔴
       const redIcon = L.divIcon({
         className: '',
-        html: '<div style="width:14px;height:14px;background:#dc2626;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
-        iconSize: [14, 14], iconAnchor: [7, 7],
+        html: '<div style="width:20px;height:20px;background:#dc2626;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',
+        iconSize: [20, 20], iconAnchor: [10, 20],
       });
-      L.marker([KATEEL_LAT, KATEEL_LNG], { icon: redIcon }).addTo(map).bindPopup(KATEEL_LABEL);
+      L.marker([KATEEL_LAT, KATEEL_LNG], { icon: redIcon }).addTo(map).bindPopup(`<b>${KATEEL_LABEL}</b>`).openPopup();
 
       // Venue marker if already set
       if (value?.lat) {
         const blueIcon = L.divIcon({
           className: '',
-          html: '<div style="width:14px;height:14px;background:#2563eb;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
-          iconSize: [14, 14], iconAnchor: [7, 7],
+          html: '<div style="width:20px;height:20px;background:#2563eb;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',
+          iconSize: [20, 20], iconAnchor: [10, 20],
         });
         venueMarkerRef.current = L.marker([value.lat, value.lng], { icon: blueIcon, draggable: true })
           .addTo(map).bindPopup('Your Venue');
@@ -134,9 +135,8 @@ export default function LocationPicker({ value, onChange }) {
     const L = window.L || require('leaflet');
     const blueIcon = L.divIcon({
       className: '',
-      html: '<div style="width:14px;height:14px;background:#2563eb;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
+      html: '<div style="width:20px;height:20px;background:#2563eb;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',
+      iconSize: [20, 20], iconAnchor: [10, 20],
     });
     if (venueMarkerRef.current) {
       venueMarkerRef.current.setLatLng([lat, lng]);
