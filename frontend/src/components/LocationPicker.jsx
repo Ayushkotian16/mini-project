@@ -58,8 +58,9 @@ export default function LocationPicker({ value, onChange }) {
       const map = L.map(mapContainerRef.current).setView(center, 13);
       mapRef.current = map;
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org">OpenStreetMap</a>',
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
+        subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map);
 
