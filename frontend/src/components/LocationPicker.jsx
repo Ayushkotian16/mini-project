@@ -16,7 +16,9 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 }
 
 async function nominatimSearch(query) {
-  const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=in`, { headers: { 'Accept-Language': 'en' } });
+  // Add India context for better results, use viewbox around Karnataka/Kerala
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=7&countrycodes=in&addressdetails=1&accept-language=en&viewbox=74.0,12.0,76.5,14.5&bounded=0`;
+  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
   return res.json();
 }
 
@@ -198,7 +200,8 @@ export default function LocationPicker({ value, onChange }) {
                 <li key={i}>
                   <button type="button" className="w-full text-left px-4 py-3 text-label-md text-on-surface hover:bg-secondary-container transition-colors border-b border-outline-variant/50 last:border-0" onClick={() => selectSuggestion(s)}>
                     <span className="material-symbols-outlined text-primary text-sm align-middle mr-1">location_on</span>
-                    {s.display_name}
+                    <span className="font-semibold">{s.name || s.display_name.split(',')[0]}</span>
+                    <span className="text-on-surface-variant ml-1">{s.display_name.split(',').slice(1, 3).join(',')}</span>
                   </button>
                 </li>
               ))}
