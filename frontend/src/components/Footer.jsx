@@ -5,7 +5,11 @@ import { contentAPI } from '../services/api';
 const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDY2gXvr5TLlT3ypR-fAnOnydCqElxAKTKQlBGdq1wK8sX-SwdhUrsynhG0uXs0AxpAM_gdQUnzbQsCnTqzCkWCEgVqSom0o0TKFu_Tl9NGXZ49PjS2dew3iIeaiELc19M7wbB-bkaqL_YQOSKsHHqROueFp4mzFQcMlF1byhnXbzi4hOvO3dGaiQM8gb87dO7A1hycCYHCAmv1x4OK34cObyPUypA33qOg4UW32k2kPk9SaHuvDv8kjtcXPAk6rjYrEHSnI3K_4PGv';
 
 export default function Footer() {
-  const [info, setInfo] = useState({ address: '', phone: '', email: '' });
+  const [info, setInfo] = useState({
+    address: 'Kateel Temple Road, Kateel, Mangalore, Karnataka - 574148',
+    phone: '+91 99019 33947',
+    email: 'nandini.chende@gmail.com',
+  });
   const [social, setSocial] = useState({ facebook: '#', instagram: '#', youtube: '#', whatsapp: '#' });
 
   useEffect(() => {
@@ -93,7 +97,6 @@ export default function Footer() {
           <p className="text-label-md opacity-60">© 2024 Team Nandini Chende Kateel. All rights reserved.</p>
           <div className="flex gap-6">
             <Link to="/contact" className="text-label-md opacity-60 hover:opacity-100 transition-opacity">Contact</Link>
-            <Link to="/admin/login" className="text-label-md opacity-60 hover:opacity-100 transition-opacity">Admin</Link>
           </div>
         </div>
       </div>
