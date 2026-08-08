@@ -13,7 +13,19 @@ export default function Footer() {
   const [social, setSocial] = useState({ facebook: '#', instagram: '#', youtube: '#', whatsapp: '#' });
 
   useEffect(() => {
-    contentAPI.getSection('contact_info').then((r) => { if (r.data.data) setInfo(r.data.data); }).catch(() => {});
+    Promise.all([
+      contentAPI.getSection('contact_info'),
+      contentAPI.getSection('owner'),
+    ]).then(([contactRes, ownerRes]) => {
+      const c = contactRes.data.data || {};
+      const o = ownerRes.data.data || {};
+      setInfo({
+        address: c.address || 'Kateel Temple Road, Kateel, Mangalore, Karnataka - 574148',
+        phone: o.phone1 || c.phone || '+91 99019 33947',
+        phone2: o.phone2 || '',
+        email: c.email || o.email || 'nandini.chende@gmail.com',
+      });
+    }).catch(() => {});
     contentAPI.getSection('social_links').then((r) => { if (r.data.data) setSocial(r.data.data); }).catch(() => {});
   }, []);
 
@@ -33,15 +45,20 @@ export default function Footer() {
               Preserving the thunderous legacy of Kateel's percussive arts. Experience the rhythm that defines our culture.
             </p>
             <div className="flex gap-3">
-              <a href={social.facebook || '#'} aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.facebook || '#'} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">facebook</span>
               </a>
-              <a href={social.instagram || '#'} aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.instagram || '#'} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">photo_camera</span>
               </a>
-              <a href={social.youtube || '#'} aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.youtube || '#'} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">play_circle</span>
               </a>
+              {social.whatsapp && social.whatsapp !== '#' && (
+                <a href={social.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+                  <span className="material-symbols-outlined text-xl">chat</span>
+                </a>
+              )}
             </div>
           </div>
 
@@ -81,6 +98,12 @@ export default function Footer() {
                 <div className="flex gap-3 opacity-80">
                   <span className="material-symbols-outlined flex-shrink-0">call</span>
                   <a href={`tel:${info.phone.replace(/\s/g,'')}`} className="text-body-md hover:opacity-100 transition-opacity">{info.phone}</a>
+                </div>
+              )}
+              {info.phone2 && (
+                <div className="flex gap-3 opacity-80">
+                  <span className="material-symbols-outlined flex-shrink-0">call</span>
+                  <a href={`tel:${info.phone2.replace(/\s/g,'')}`} className="text-body-md hover:opacity-100 transition-opacity">{info.phone2}</a>
                 </div>
               )}
               {info.email && (

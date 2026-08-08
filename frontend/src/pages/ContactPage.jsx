@@ -14,8 +14,18 @@ export default function ContactPage() {
   });
 
   useEffect(() => {
-    contentAPI.getSection('contact_info').then((r) => {
-      if (r.data.data) setContactInfo(r.data.data);
+    Promise.all([
+      contentAPI.getSection('contact_info'),
+      contentAPI.getSection('owner'),
+    ]).then(([contactRes, ownerRes]) => {
+      const c = contactRes.data.data || {};
+      const o = ownerRes.data.data || {};
+      setContactInfo({
+        address: c.address || 'Kateel Temple Road, Kateel, Mangalore, Karnataka - 574148',
+        phone: o.phone1 || c.phone || '+91 99019 33947',
+        phone2: o.phone2 || '',
+        email: c.email || o.email || 'nandini.chende@gmail.com',
+      });
     }).catch(() => {});
   }, []);
 

@@ -7,9 +7,26 @@ const FOUNDER_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Ooft7
 
 export default function AboutPage() {
   const [about, setAbout] = useState(null);
+  const [contactInfo, setContactInfo] = useState({ phone: '+91 99019 33947', email: 'nandini.chende@gmail.com' });
+  const [social, setSocial] = useState({ facebook: '', instagram: '', youtube: '', whatsapp: '' });
 
   useEffect(() => {
     contentAPI.getSection('about').then((r) => setAbout(r.data.data)).catch(() => {});
+    // Load contact info — merge owner + contact_info, owner takes priority for phone
+    Promise.all([
+      contentAPI.getSection('contact_info'),
+      contentAPI.getSection('owner'),
+    ]).then(([contactRes, ownerRes]) => {
+      const c = contactRes.data.data || {};
+      const o = ownerRes.data.data || {};
+      setContactInfo({
+        phone: o.phone1 || c.phone || '+91 99019 33947',
+        phone2: o.phone2 || '',
+        email: c.email || o.email || 'nandini.chende@gmail.com',
+        address: c.address || '',
+      });
+    }).catch(() => {});
+    contentAPI.getSection('social_links').then((r) => { if (r.data.data) setSocial(r.data.data); }).catch(() => {});
   }, []);
 
   const data = about || {};
@@ -74,24 +91,43 @@ export default function AboutPage() {
               <p className="text-body-md text-on-surface-variant max-w-3xl leading-relaxed">
                 {data.founderBio || 'Kiran Anchan is the visionary behind Team Nandini Chende Kateel. With over a decade of dedication to the art of percussion, he has led the team to perform at prestigious events across the country.'}
               </p>
-              <div className="flex justify-center md:justify-start gap-4">
-                <a
-                  href="tel:+919901933947"
-                  title="Call: +91 99019 33947"
-                  className="group relative flex items-center gap-2 px-5 py-3 rounded-full bg-secondary-container text-primary hover:bg-primary hover:text-on-primary transition-all"
-                >
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
-                  <span className="text-label-lg font-semibold">+91 99019 33947</span>
-                </a>
-                <a
-                  href="mailto:nandini.chende@gmail.com"
-                  title="Email: nandini.chende@gmail.com"
-                  className="group relative flex items-center gap-2 px-5 py-3 rounded-full bg-secondary-container text-primary hover:bg-primary hover:text-on-primary transition-all"
-                >
-                  <span className="material-symbols-outlined">mail</span>
-                  <span className="text-label-lg font-semibold hidden sm:inline">nandini.chende@gmail.com</span>
-                  <span className="text-label-lg font-semibold sm:hidden">Email</span>
-                </a>
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                {contactInfo.phone && (
+                  <a href={`tel:${contactInfo.phone.replace(/\s/g,'')}`}
+                    className="group flex items-center gap-2 px-5 py-3 rounded-full bg-secondary-container text-primary hover:bg-primary hover:text-on-primary transition-all">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
+                    <span className="text-label-lg font-semibold">{contactInfo.phone}</span>
+                  </a>
+                )}
+                {contactInfo.phone2 && (
+                  <a href={`tel:${contactInfo.phone2.replace(/\s/g,'')}`}
+                    className="group flex items-center gap-2 px-5 py-3 rounded-full bg-secondary-container text-primary hover:bg-primary hover:text-on-primary transition-all">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
+                    <span className="text-label-lg font-semibold">{contactInfo.phone2}</span>
+                  </a>
+                )}
+                {contactInfo.email && (
+                  <a href={`mailto:${contactInfo.email}`}
+                    className="group flex items-center gap-2 px-5 py-3 rounded-full bg-secondary-container text-primary hover:bg-primary hover:text-on-primary transition-all">
+                    <span className="material-symbols-outlined">mail</span>
+                    <span className="text-label-lg font-semibold hidden sm:inline">{contactInfo.email}</span>
+                    <span className="text-label-lg font-semibold sm:hidden">Email</span>
+                  </a>
+                )}
+                {social.whatsapp && social.whatsapp !== '#' && (
+                  <a href={social.whatsapp} target="_blank" rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-5 py-3 rounded-full bg-green-100 text-green-700 hover:bg-green-600 hover:text-white transition-all">
+                    <span className="material-symbols-outlined">chat</span>
+                    <span className="text-label-lg font-semibold">WhatsApp</span>
+                  </a>
+                )}
+                {social.instagram && social.instagram !== '#' && (
+                  <a href={social.instagram} target="_blank" rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-5 py-3 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-600 hover:text-white transition-all">
+                    <span className="material-symbols-outlined">photo_camera</span>
+                    <span className="text-label-lg font-semibold">Instagram</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>
