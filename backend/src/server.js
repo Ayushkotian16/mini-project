@@ -22,8 +22,23 @@ connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  /\.vercel\.app$/,   // allow all Vercel preview URLs
+  /\.onrender\.com$/, // allow Render
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow non-browser requests
+    const allowed = allowedOrigins.some((o) => {
+      if (!o) return false;
+      if (o instanceof RegExp) return o.test(origin);
+      return o === origin;
+    });
+    callback(null, allowed ? origin : false);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
