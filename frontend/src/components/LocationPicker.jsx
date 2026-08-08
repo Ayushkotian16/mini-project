@@ -84,6 +84,11 @@ export default function LocationPicker({ value, onChange }) {
             onChange({ address: addr, lat, lng, distance: dist });
           }).catch(() => onChange({ ...value, lat, lng, distance: dist }));
         });
+      } else if (navigator.geolocation) {
+        // Center on user's location if no venue set yet
+        navigator.geolocation.getCurrentPosition((pos) => {
+          map.setView([pos.coords.latitude, pos.coords.longitude], 14);
+        }, () => {}, { timeout: 5000 });
       }
 
       // Click to place venue
