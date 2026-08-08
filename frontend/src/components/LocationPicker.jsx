@@ -88,14 +88,14 @@ export default function LocationPicker({ value, onChange }) {
         // Center on user's location and show green "you are here" marker
         navigator.geolocation.getCurrentPosition((pos) => {
           const { latitude: lat, longitude: lng } = pos.coords;
-          map.setView([lat, lng], 14);
+          map.setView([lat, lng], 16); // zoom in more for accuracy
           const greenIcon = L.divIcon({
             className: '',
             html: '<div style="width:16px;height:16px;background:#16a34a;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(22,163,74,0.3)"></div>',
             iconSize: [16, 16], iconAnchor: [8, 8],
           });
-          L.marker([lat, lng], { icon: greenIcon }).addTo(map).bindPopup('📍 You are here').openPopup();
-        }, () => {}, { timeout: 5000 });
+          L.marker([lat, lng], { icon: greenIcon }).addTo(map).bindPopup(`📍 You are here<br/><small>${lat.toFixed(5)}, ${lng.toFixed(5)}</small>`).openPopup();
+        }, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
       }
 
       // Click to place venue
