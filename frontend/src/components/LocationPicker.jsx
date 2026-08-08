@@ -85,9 +85,16 @@ export default function LocationPicker({ value, onChange }) {
           }).catch(() => onChange({ ...value, lat, lng, distance: dist }));
         });
       } else if (navigator.geolocation) {
-        // Center on user's location if no venue set yet
+        // Center on user's location and show green "you are here" marker
         navigator.geolocation.getCurrentPosition((pos) => {
-          map.setView([pos.coords.latitude, pos.coords.longitude], 14);
+          const { latitude: lat, longitude: lng } = pos.coords;
+          map.setView([lat, lng], 14);
+          const greenIcon = L.divIcon({
+            className: '',
+            html: '<div style="width:16px;height:16px;background:#16a34a;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(22,163,74,0.3)"></div>',
+            iconSize: [16, 16], iconAnchor: [8, 8],
+          });
+          L.marker([lat, lng], { icon: greenIcon }).addTo(map).bindPopup('📍 You are here').openPopup();
         }, () => {}, { timeout: 5000 });
       }
 
