@@ -27,7 +27,8 @@ export default function ImageUploader({
   const [dragOver, setDragOver] = useState(false);
   const [cropSrc, setCropSrc] = useState(null); // triggers crop modal
 
-  const endpoint = isPublic ? '/api/upload/public' : '/api/upload';
+  const BASE = import.meta.env.VITE_API_URL || '/api';
+  const endpoint = isPublic ? `${BASE}/upload/public` : `${BASE}/upload`;
   const isCircle = shape === 'circle';
 
   // Upload a Blob/File to server
