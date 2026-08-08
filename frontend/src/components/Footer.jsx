@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { contentAPI } from '../services/api';
 
 const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDY2gXvr5TLlT3ypR-fAnOnydCqElxAKTKQlBGdq1wK8sX-SwdhUrsynhG0uXs0AxpAM_gdQUnzbQsCnTqzCkWCEgVqSom0o0TKFu_Tl9NGXZ49PjS2dew3iIeaiELc19M7wbB-bkaqL_YQOSKsHHqROueFp4mzFQcMlF1byhnXbzi4hOvO3dGaiQM8gb87dO7A1hycCYHCAmv1x4OK34cObyPUypA33qOg4UW32k2kPk9SaHuvDv8kjtcXPAk6rjYrEHSnI3K_4PGv';
 
 export default function Footer() {
+  const [info, setInfo] = useState({ address: '', phone: '', email: '' });
+  const [social, setSocial] = useState({ facebook: '#', instagram: '#', youtube: '#', whatsapp: '#' });
+
+  useEffect(() => {
+    contentAPI.getSection('contact_info').then((r) => { if (r.data.data) setInfo(r.data.data); }).catch(() => {});
+    contentAPI.getSection('social_links').then((r) => { if (r.data.data) setSocial(r.data.data); }).catch(() => {});
+  }, []);
+
   return (
     <footer className="w-full bg-primary text-on-primary">
       <div className="container-max py-16">
@@ -20,13 +29,13 @@ export default function Footer() {
               Preserving the thunderous legacy of Kateel's percussive arts. Experience the rhythm that defines our culture.
             </p>
             <div className="flex gap-3">
-              <a href="#" aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.facebook || '#'} aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">facebook</span>
               </a>
-              <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.instagram || '#'} aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">photo_camera</span>
               </a>
-              <a href="#" aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+              <a href={social.youtube || '#'} aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
                 <span className="material-symbols-outlined text-xl">play_circle</span>
               </a>
             </div>
@@ -36,18 +45,8 @@ export default function Footer() {
           <div className="space-y-5">
             <h4 className="text-label-lg uppercase tracking-widest opacity-60 font-bold">Quick Links</h4>
             <ul className="space-y-3">
-              {[
-                { to: '/', label: 'Home' },
-                { to: '/about', label: 'About Us' },
-                { to: '/team', label: 'Team Members' },
-                { to: '/events', label: 'Events' },
-                { to: '/book', label: 'Book Us' },
-              ].map((link) => (
-                <li key={link.to}>
-                  <Link to={link.to} className="text-body-md opacity-80 hover:opacity-100 transition-opacity">
-                    {link.label}
-                  </Link>
-                </li>
+              {[{ to: '/', label: 'Home' }, { to: '/about', label: 'About Us' }, { to: '/team', label: 'Team Members' }, { to: '/events', label: 'Events' }, { to: '/book', label: 'Book Us' }].map((link) => (
+                <li key={link.to}><Link to={link.to} className="text-body-md opacity-80 hover:opacity-100 transition-opacity">{link.label}</Link></li>
               ))}
             </ul>
           </div>
@@ -64,22 +63,28 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact — from DB */}
           <div className="space-y-5">
             <h4 className="text-label-lg uppercase tracking-widest opacity-60 font-bold">Get in Touch</h4>
             <div className="space-y-4">
-              <div className="flex gap-3 opacity-80">
-                <span className="material-symbols-outlined flex-shrink-0">location_on</span>
-                <p className="text-body-md">Kateel Temple Road, Kateel,<br />Mangalore, Karnataka - 574148</p>
-              </div>
-              <div className="flex gap-3 opacity-80">
-                <span className="material-symbols-outlined flex-shrink-0">call</span>
-                <a href="tel:+919901933947" className="text-body-md hover:opacity-100 transition-opacity">+91 99019 33947</a>
-              </div>
-              <div className="flex gap-3 opacity-80">
-                <span className="material-symbols-outlined flex-shrink-0">mail</span>
-                <a href="mailto:nandini.chende@gmail.com" className="text-body-md hover:opacity-100 transition-opacity">nandini.chende@gmail.com</a>
-              </div>
+              {info.address && (
+                <div className="flex gap-3 opacity-80">
+                  <span className="material-symbols-outlined flex-shrink-0">location_on</span>
+                  <p className="text-body-md">{info.address}</p>
+                </div>
+              )}
+              {info.phone && (
+                <div className="flex gap-3 opacity-80">
+                  <span className="material-symbols-outlined flex-shrink-0">call</span>
+                  <a href={`tel:${info.phone.replace(/\s/g,'')}`} className="text-body-md hover:opacity-100 transition-opacity">{info.phone}</a>
+                </div>
+              )}
+              {info.email && (
+                <div className="flex gap-3 opacity-80">
+                  <span className="material-symbols-outlined flex-shrink-0">mail</span>
+                  <a href={`mailto:${info.email}`} className="text-body-md hover:opacity-100 transition-opacity">{info.email}</a>
+                </div>
+              )}
             </div>
           </div>
         </div>

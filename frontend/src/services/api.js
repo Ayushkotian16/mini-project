@@ -5,6 +5,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// A separate instance for public endpoints — no auth redirect
+const publicApi = axios.create({
+  baseURL: '/api',
+  headers: { 'Content-Type': 'application/json' },
+});
+
 // Attach JWT token to every request if present
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('adminToken');
@@ -14,11 +20,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally
+// Handle 401 globally — only redirect to login if currently on an admin page
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && window.location.pathname.startsWith('/admin')) {
       localStorage.removeItem('adminToken');
       window.location.href = '/admin/login';
     }
@@ -36,9 +42,12 @@ export const authAPI = {
 export const bookingAPI = {
   sendOTP: (phone) => api.post('/bookings/send-otp', { phone }),
   verifyOTP: (phone, otp) => api.post('/bookings/verify-otp', { phone, otp }),
+  getPricing: () => api.get('/bookings/pricing'),
+  checkAvailability: (date) => api.get('/bookings/check-availability', { params: { date } }),
   create: (data) => api.post('/bookings', data),
   getAll: (params) => api.get('/bookings', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
+  update: (id, data) => api.put(`/bookings/${id}`, data),
   updateStatus: (id, status, adminNotes) => api.patch(`/bookings/${id}/status`, { status, adminNotes }),
   delete: (id) => api.delete(`/bookings/${id}`),
 };
@@ -85,6 +94,13 @@ export const contentAPI = {
   getAll: () => api.get('/content'),
   getSection: (section) => api.get(`/content/${section}`),
   update: (section, data) => api.put(`/content/${section}`, data),
+};
+
+// ── Payments (public — no auth redirect) ──────────────
+export const paymentAPI = {
+  getConfig: () => publicApi.get('/payments/config'),
+  createOrder: (bookingId) => publicApi.post('/payments/create-order', { bookingId }),
+  verify: (data) => publicApi.post('/payments/verify', data),
 };
 
 export default api;

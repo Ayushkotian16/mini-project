@@ -5,7 +5,7 @@ const siteContentSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    enum: ['hero', 'about', 'contact_info', 'social_links', 'general'],
+    enum: ['hero', 'about', 'contact_info', 'social_links', 'general', 'pricing', 'offers', 'owner', 'packages'],
   },
   data: {
     type: mongoose.Schema.Types.Mixed,

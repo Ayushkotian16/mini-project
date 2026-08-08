@@ -122,9 +122,7 @@ export default function AdminRegister() {
                   required
                 />
               </div>
-              <p className="text-label-md text-on-surface-variant mt-1">
-                Default key: <code className="bg-surface-container px-1 rounded">nandini2024</code> — change in backend <code>.env</code>
-              </p>
+
             </div>
 
             <div className="pt-2">

@@ -1,36 +1,128 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { eventAPI, reviewAPI, contentAPI } from '../services/api';
+import { eventAPI, reviewAPI, contentAPI, bookingAPI } from '../services/api';
 
 const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDY2gXvr5TLlT3ypR-fAnOnydCqElxAKTKQlBGdq1wK8sX-SwdhUrsynhG0uXs0AxpAM_gdQUnzbQsCnTqzCkWCEgVqSom0o0TKFu_Tl9NGXZ49PjS2dew3iIeaiELc19M7wbB-bkaqL_YQOSKsHHqROueFp4mzFQcMlF1byhnXbzi4hOvO3dGaiQM8gb87dO7A1hycCYHCAmv1x4OK34cObyPUypA33qOg4UW32k2kPk9SaHuvDv8kjtcXPAk6rjYrEHSnI3K_4PGv';
-const DRUM_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCzS7sIHFE6ZIHlKSjOEUq7g4tTgYzVUnAuxrChw1Z5CUJqXzj3XcTj8064IIPHpkzMsy7lU0Z4S9QjaT1NQLubdqOC1gWlnrXbOPrFCFAKnNOZbkZoAFTzwcBTD4MJDKMPAn9qNjKFNoIBaKw9QCyexRETnNzY9e4tl08wpKP1vyumgjJLxRJENOq3XGFWZdiZX6jBI7hhcfhbpDhxdYac41Mf795_LHaVpFalcq3x1aEBT-2XXSiGmosgld6S3qBEowG_jiUwllwt';
+
+// Countdown hook — returns { days, hours, minutes, seconds } until target date
+function useCountdown(target) {
+  const calc = () => {
+    if (!target) return null;
+    const diff = new Date(target) - new Date();
+    if (diff <= 0) return null;
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff % 86400000) / 3600000),
+      minutes: Math.floor((diff % 3600000) / 60000),
+      seconds: Math.floor((diff % 60000) / 1000),
+    };
+  };
+  const [time, setTime] = useState(calc);
+  useEffect(() => {
+    const t = setInterval(() => setTime(calc()), 1000);
+    return () => clearInterval(t);
+  }, [target]);
+  return time;
+}
+
+function OfferBanner({ offer }) {
+  const countdown = useCountdown(offer.expiresAt);
+  // Emojis that burst from corners
+  const emojis = ['🎉','🥁','🎊','✨','🔥','💥','🎶','🏷️','⚡','🎁'];
+  return (
+    <div className="relative rounded-2xl overflow-hidden shadow-2xl border-2 border-yellow-400/60 group">
+      {/* Animated emoji confetti */}
+      <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+        {emojis.map((e, i) => (
+          <span key={i} className="absolute text-2xl animate-bounce select-none"
+            style={{
+              left: `${(i % 5) * 22 + Math.random() * 5}%`,
+              bottom: `${Math.random() * 30}%`,
+              animationDelay: `${i * 0.18}s`,
+              animationDuration: `${1.2 + (i % 3) * 0.4}s`,
+              opacity: 0.85,
+            }}>
+            {e}
+          </span>
+        ))}
+      </div>
+
+      {/* Shimmer sweep */}
+      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden rounded-2xl">
+        <div className="absolute -top-1/2 -left-1/4 w-1/2 h-[200%] bg-white/10 rotate-12 animate-[shimmer_2.5s_infinite_linear]" />
+      </div>
+
+      {/* Background */}
+      {offer.imageUrl ? (
+        <div className="absolute inset-0">
+          <img src={offer.imageUrl} alt={offer.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/20" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-tertiary" />
+      )}
+
+      <div className="relative z-30 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex-1">
+          {/* Discount badge */}
+          <div className="inline-flex items-center gap-2 bg-yellow-400 text-black px-3 py-1 rounded-full text-label-md font-black mb-3 animate-pulse shadow-lg shadow-yellow-400/50">
+            🏷️ {offer.discountPercent}% OFF — LIMITED TIME!
+          </div>
+          <h3 className="text-headline-sm md:text-headline-md font-black text-white mb-1 drop-shadow-lg">{offer.title}</h3>
+          {offer.subtitle && <p className="text-body-md text-white/90 mb-2 font-semibold">{offer.subtitle}</p>}
+          {offer.urgencyText && (
+            <p className="text-label-lg text-yellow-300 font-black flex items-center gap-1 animate-pulse">
+              ⚡ {offer.urgencyText} ⚡
+            </p>
+          )}
+          {countdown && (
+            <div className="flex gap-3 mt-3">
+              {[{ v: countdown.days, l: 'Days' }, { v: countdown.hours, l: 'Hrs' }, { v: countdown.minutes, l: 'Min' }, { v: countdown.seconds, l: 'Sec' }].map(({ v, l }) => (
+                <div key={l} className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 text-center min-w-[48px] border border-yellow-400/40">
+                  <span className="block text-headline-sm font-black text-yellow-300 leading-none">{String(v).padStart(2, '0')}</span>
+                  <span className="block text-label-md text-white/70">{l}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <Link to={`/book?offerId=${offer.id}`}
+          className="flex-shrink-0 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-label-lg px-8 py-4 rounded-full shadow-2xl shadow-yellow-400/40 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap border-2 border-yellow-300 animate-pulse">
+          🎉 Book Now & Save!
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [events, setEvents] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [content, setContent] = useState(null);
+  const [activeOffers, setActiveOffers] = useState([]);
 
   useEffect(() => {
-    // Fetch events marked showOnHome=true (approved bookings + admin-pinned)
-    // Also fetch recent past events as fallback
     Promise.all([
       eventAPI.getAll({ showOnHome: 'true' }),
       eventAPI.getAll({ status: 'past' }),
     ]).then(([homeRes, pastRes]) => {
       const homeEvents = homeRes.data.events || [];
       const pastEvents = pastRes.data.events || [];
-      // Merge: home-pinned first, then fill with past events (no duplicates), max 6
       const ids = new Set(homeEvents.map((e) => e._id));
       const merged = [...homeEvents, ...pastEvents.filter((e) => !ids.has(e._id))];
       setEvents(merged.slice(0, 6));
     }).catch(() => {});
+
     reviewAPI.getApproved().then((r) => setReviews(r.data.reviews.slice(0, 3))).catch(() => {});
     contentAPI.getAll().then((r) => setContent(r.data.content)).catch(() => {});
+
+    bookingAPI.getPricing().then((r) => {
+      setActiveOffers(r.data.activeOffers || []);
+    }).catch(() => {});
   }, []);
 
   const hero = content?.hero || {};
   const about = content?.about || {};
-  const heritageImage = about.heritageImageUrl || DRUM_IMG;
 
   return (
     <>
@@ -52,7 +144,7 @@ export default function HomePage() {
             </h1>
           </div>
           <p className="text-body-lg text-on-surface-variant mb-10 max-w-2xl">
-            {hero.description || 'Rhythm of Tradition, Beat of Excellence. Experience the majestic resonance of Kateel\'s finest percussion ensemble.'}
+            {hero.description || "Rhythm of Tradition, Beat of Excellence. Experience the majestic resonance of Kateel's finest percussion ensemble."}
           </p>
           <div className="flex flex-wrap justify-center gap-4 z-10">
             <Link to="/book" className="btn-primary">
@@ -66,6 +158,23 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Active Offer Banners ── */}
+      {activeOffers.length > 0 && (
+        <section className="py-16 bg-surface-container-low">
+          <div className="container-max">
+            <div className="mb-8 text-center">
+              <span className="section-label">Special Offers</span>
+              <h2 className="text-headline-md font-bold text-on-surface">Book Now & Save Big</h2>
+            </div>
+            <div className="space-y-6">
+              {activeOffers.map((offer) => (
+                <OfferBanner key={offer.id} offer={offer} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Stats Bar */}
       <section className="py-16 bg-surface-container-low border-y border-outline-variant">
@@ -87,33 +196,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Intro */}
+      {/* About Intro — heritage section WITHOUT image */}
       <section className="py-24 bg-surface-container-lowest overflow-hidden">
         <div className="container-max">
-          <div className="flex flex-col md:flex-row items-center gap-16">
-            <div className="w-full md:w-1/2 relative flex justify-center">
-              <div className="aspect-square w-full max-w-md rounded-full border-[3px] border-primary p-3">
-                <div className="w-full h-full rounded-full overflow-hidden">
-                  <img src={heritageImage} alt={about.heritageTitle || 'Our Heritage'} className="w-full h-full object-cover" />
-                </div>
-              </div>
-              <div className="absolute -bottom-4 -right-4 bg-tertiary-fixed text-on-tertiary-fixed p-6 rounded-2xl shadow-luminous">
-                <span className="material-symbols-outlined text-4xl">music_note</span>
-              </div>
-            </div>
-            <div className="w-full md:w-1/2">
-              <span className="section-label">{about.heritageLabel || 'Our Heritage'}</span>
-              <h2 className="text-headline-md font-bold text-on-surface mb-6">
-                {about.heritageTitle || 'Preserving the Percussive Art of Karnataka'}
-              </h2>
-              <p className="text-body-lg text-on-surface-variant mb-8 leading-relaxed">
-                {about.heritageDescription || about.description || 'Team Nandini Chende Kateel is more than just a musical group; we are the custodians of a rhythmic legacy. For over a decade, we have brought the thunderous energy of the Chende to festivals, temples, and corporate stages across India.'}
-              </p>
-              <Link to="/about" className="inline-flex items-center gap-2 text-primary font-semibold text-label-lg border-b-2 border-primary pb-1 hover:text-on-tertiary-fixed-variant transition-colors group">
-                Learn More About Us
-                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-              </Link>
-            </div>
+          <div className="max-w-3xl mx-auto text-center">
+            <span className="section-label">{about.heritageLabel || 'Our Heritage'}</span>
+            <h2 className="text-headline-md font-bold text-on-surface mb-6">
+              {about.heritageTitle || 'Preserving the Percussive Art of Karnataka'}
+            </h2>
+            <p className="text-body-lg text-on-surface-variant mb-8 leading-relaxed">
+              {about.heritageDescription || about.description || 'Team Nandini Chende Kateel is more than just a musical group; we are the custodians of a rhythmic legacy. For over a decade, we have brought the thunderous energy of the Chende to festivals, temples, and corporate stages across India.'}
+            </p>
+            <Link to="/about" className="inline-flex items-center gap-2 text-primary font-semibold text-label-lg border-b-2 border-primary pb-1 hover:text-on-tertiary-fixed-variant transition-colors group">
+              Learn More About Us
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -128,8 +225,7 @@ export default function HomePage() {
                 <h2 className="text-headline-md font-bold text-on-surface">Recent Events</h2>
               </div>
               <Link to="/events" className="hidden md:flex items-center gap-2 text-primary font-semibold text-label-lg group">
-                View All
-                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">east</span>
+                View All <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">east</span>
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

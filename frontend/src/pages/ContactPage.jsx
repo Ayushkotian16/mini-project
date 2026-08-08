@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { contactAPI, reviewAPI } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { contactAPI, reviewAPI, contentAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function ContactPage() {
@@ -7,6 +7,17 @@ export default function ContactPage() {
   const [reviewForm, setReviewForm] = useState({ name: '', message: '', rating: 5, eventType: '' });
   const [submittingContact, setSubmittingContact] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [contactInfo, setContactInfo] = useState({
+    address: 'Kateel Temple Road, Kateel, Mangalore, Karnataka - 574148',
+    phone: '+91 99019 33947',
+    email: 'nandini.chende@gmail.com',
+  });
+
+  useEffect(() => {
+    contentAPI.getSection('contact_info').then((r) => {
+      if (r.data.data) setContactInfo(r.data.data);
+    }).catch(() => {});
+  }, []);
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
@@ -89,10 +100,10 @@ export default function ContactPage() {
                 <h3 className="text-headline-sm font-bold text-on-surface mb-6">Contact Information</h3>
                 <div className="space-y-5">
                   {[
-                    { icon: 'location_on', text: 'Kateel Temple Road, Kateel,\nMangalore, Karnataka - 574148', href: null },
-                    { icon: 'call', text: '+91 99019 33947', href: 'tel:+919901933947' },
-                    { icon: 'mail', text: 'nandini.chende@gmail.com', href: 'mailto:nandini.chende@gmail.com' },
-                  ].map((item) => (
+                    { icon: 'location_on', text: contactInfo.address, href: null },
+                    { icon: 'call', text: contactInfo.phone, href: contactInfo.phone ? `tel:${contactInfo.phone.replace(/\s/g,'')}` : null },
+                    { icon: 'mail', text: contactInfo.email, href: contactInfo.email ? `mailto:${contactInfo.email}` : null },
+                  ].filter(i => i.text).map((item) => (
                     <div key={item.icon} className="flex gap-4">
                       <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
                         <span className="material-symbols-outlined text-primary">{item.icon}</span>

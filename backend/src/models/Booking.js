@@ -51,7 +51,26 @@ const bookingSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
+  // Pricing — stored at time of booking submission
+  pricePerMember: {
+    type: Number,
+    default: 1000,
+  },
+  distanceSurchargePerKm: {
+    type: Number,
+    default: 150,
+  },
+  discountPercent: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100,
+  },
   estimatedPrice: {
+    type: Number,
+    default: 0,
+  },
+  finalPrice: {
     type: Number,
     default: 0,
   },
@@ -69,17 +88,29 @@ const bookingSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'advance_paid', 'fully_paid'],
+    default: 'unpaid',
+  },
+  razorpayOrderId: { type: String, default: '' },
+  razorpayPaymentId: { type: String, default: '' },
 }, { timestamps: true });
 
 // Calculate estimated price before saving
-// Base = members × ₹1,000
-// Surcharge: ≤5 km = ₹0 | >5 km = distance × ₹150
 bookingSchema.pre('save', function (next) {
   const n = Math.max(this.numberOfMembers || 5, 5);
   const d = Math.max(this.distanceFromKateel || 0, 0);
-  const base = 1000 * n;
-  const surcharge = d > 5 ? Math.round(d * 150) : 0;
-  this.estimatedPrice = base + surcharge;
+  const ppm = this.pricePerMember || 1000;
+  const spm = this.distanceSurchargePerKm || 150;
+  const disc = Math.min(Math.max(this.discountPercent || 0, 0), 100);
+
+  const base = ppm * n;
+  const surcharge = d > 5 ? Math.round(d * spm) : 0;
+  const subtotal = base + surcharge;
+  const discountAmt = Math.round(subtotal * disc / 100);
+  this.estimatedPrice = subtotal;
+  this.finalPrice = subtotal - discountAmt;
   next();
 });
 

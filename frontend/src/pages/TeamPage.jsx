@@ -94,23 +94,21 @@ export default function TeamPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {members.map((member) => (
                 <div key={member._id} className="card overflow-hidden hover:-translate-y-1 transition-transform group">
-                  {/* Photo — tall, Instagram-style */}
-                  <div className="relative h-72 bg-gradient-to-br from-secondary-container to-primary-fixed overflow-hidden">
+                  {/* Photo — circle on white background */}
+                  <div className="relative h-72 bg-white overflow-hidden flex items-center justify-center">
                     {member.imageUrl ? (
-                      <img
-                        src={member.imageUrl}
-                        alt={member.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+                      <div className="w-56 h-56 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+                        <img
+                          src={member.imageUrl}
+                          alt={member.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-8xl text-primary/20">person</span>
+                      <div className="w-56 h-56 rounded-full bg-secondary-container flex items-center justify-center border-4 border-primary/20">
+                        <span className="material-symbols-outlined text-8xl text-primary/30">person</span>
                       </div>
                     )}
-                    {/* Level badge overlay */}
-                    <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-label-md font-semibold uppercase tracking-wider shadow-md ${LEVEL_COLORS[member.experienceLevel] || 'bg-secondary-container text-primary'}`}>
-                      {member.experienceLevel}
-                    </span>
                   </div>
 
                   {/* Info */}

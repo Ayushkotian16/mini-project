@@ -41,6 +41,33 @@ const defaultContent = {
     tagline: 'Preserving the Rhythmic Heritage of Karnataka',
     metaDescription: 'Team Nandini Chende Kateel - Traditional Chende percussion ensemble from Kateel, Karnataka.',
   },
+  pricing: {
+    pricePerMember: 1000,
+    distanceSurchargePerKm: 150,
+    freeDistanceKm: 5,
+  },
+  offers: {
+    items: [],
+    // Each item: { id, title, subtitle, discountPercent, imageUrl, urgencyText, active, expiresAt }
+  },
+  owner: {
+    name: 'Kiran Anchan',
+    phone1: '',
+    phone2: '',
+    email: '',
+  },
+  packages: {
+    items: [
+      { members: 6,  label: '6 Members',  fakeMultiplier: 1.20, enabled: true },
+      { members: 8,  label: '8 Members',  fakeMultiplier: 1.18, enabled: true },
+      { members: 12, label: '12 Members', fakeMultiplier: 1.15, enabled: true },
+      { members: 15, label: '15 Members', fakeMultiplier: 1.15, enabled: true },
+      { members: 18, label: '18 Members', fakeMultiplier: 1.12, enabled: true },
+      { members: 21, label: '21 Members', fakeMultiplier: 1.12, enabled: true },
+      { members: 24, label: '24 Members', fakeMultiplier: 1.10, enabled: true },
+      { members: 30, label: '30 Members', fakeMultiplier: 1.10, enabled: true },
+    ],
+  },
 };
 
 // @desc    Get site content by section (public)
@@ -52,7 +79,6 @@ const getContent = async (req, res, next) => {
     let content = await SiteContent.findOne({ section });
 
     if (!content) {
-      // Return default content if not set
       const defaultData = defaultContent[section];
       if (!defaultData) {
         return res.status(404).json({ success: false, message: 'Content section not found.' });
@@ -90,7 +116,7 @@ const getAllContent = async (req, res, next) => {
 const updateContent = async (req, res, next) => {
   try {
     const { section } = req.params;
-    const validSections = ['hero', 'about', 'contact_info', 'social_links', 'general'];
+    const validSections = ['hero', 'about', 'contact_info', 'social_links', 'general', 'pricing', 'offers', 'owner', 'packages'];
 
     if (!validSections.includes(section)) {
       return res.status(400).json({ success: false, message: 'Invalid content section.' });
