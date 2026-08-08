@@ -68,10 +68,10 @@ export default function LocationPicker({ value, onChange }) {
       const map = L.map(mapContainerRef.current, { zoomControl: true }).setView(center, 13);
       mapRef.current = map;
 
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',
         maxZoom: 19,
-        crossOrigin: true,
+        subdomains: ['a', 'b', 'c'],
       }).addTo(map);
 
       // Force size recalc after render
