@@ -217,7 +217,22 @@ export default function AdminBookings() {
                     <h3 className="text-headline-sm font-bold text-on-surface">{b.fullName}</h3>
                     <div className="flex flex-wrap gap-4 mt-2 text-label-md text-on-surface-variant">
                       <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">call</span>{b.phone}</span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span>{b.venueAddress}</span>
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">location_on</span>
+                        {b.venueLocation?.lat ? (
+                          <a href={`https://www.google.com/maps?q=${b.venueLocation.lat},${b.venueLocation.lng}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-primary underline hover:text-on-primary-fixed-variant">
+                            {b.venueAddress} 📍
+                          </a>
+                        ) : (
+                          <a href={`https://www.google.com/maps/search/${encodeURIComponent(b.venueAddress)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-primary underline hover:text-on-primary-fixed-variant">
+                            {b.venueAddress} 🔍
+                          </a>
+                        )}
+                      </span>
                       <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">calendar_month</span>{new Date(b.eventDate).toLocaleDateString('en-IN')}</span>
                       <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">group</span>{b.numberOfMembers} members</span>
                     </div>

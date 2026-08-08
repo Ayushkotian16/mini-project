@@ -46,6 +46,7 @@ const sendBookingNotification = async (booking) => {
           <tr><td style="padding:8px 0;color:#666;">Event Date</td><td style="padding:8px 0;">${new Date(booking.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td></tr>
           <tr><td style="padding:8px 0;color:#666;">Venue</td><td style="padding:8px 0;">${booking.venueAddress}</td></tr>
           <tr><td style="padding:8px 0;color:#666;">District</td><td style="padding:8px 0;">${booking.district}</td></tr>
+          ${booking.venueLocation?.lat ? `<tr><td style="padding:8px 0;color:#666;">Map Location</td><td style="padding:8px 0;"><a href="https://www.google.com/maps?q=${booking.venueLocation.lat},${booking.venueLocation.lng}" style="color:#9b0044;">📍 Open in Google Maps</a><br/><small style="color:#999;">${booking.venueLocation.lat.toFixed(6)}, ${booking.venueLocation.lng.toFixed(6)}</small></td></tr>` : ''}
           <tr><td style="padding:8px 0;color:#666;">Members</td><td style="padding:8px 0;">${booking.numberOfMembers}</td></tr>
           <tr><td style="padding:8px 0;color:#666;">Distance</td><td style="padding:8px 0;">${booking.distanceFromKateel} km</td></tr>
           <tr><td style="padding:8px 0;color:#666;">Discount</td><td style="padding:8px 0;">${booking.discountPercent || 0}%</td></tr>

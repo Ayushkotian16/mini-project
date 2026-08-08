@@ -51,75 +51,82 @@ export default function LocationPicker({ value, onChange }) {
 
   // Load Leaflet map once showMap becomes true
   useEffect(() => {
-    if (!showMap || !mapContainerRef.current || mapRef.current) return;
+    if (!showMap) return;
+    // Wait for DOM to render the container, then init map
+    const timer = setTimeout(() => {
+      if (!mapContainerRef.current || mapRef.current) return;
 
-    const L = window.L || require('leaflet');
+      const L = window.L || require('leaflet');
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
 
-    // Fix default marker icons (broken in bundlers)
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
+      const center = value?.lat ? [value.lat, value.lng] : [KATEEL_LAT, KATEEL_LNG];
+      const map = L.map(mapContainerRef.current).setView(center, 12);
+      mapRef.current = map;
 
-    const center = value?.lat ? [value.lat, value.lng] : [KATEEL_LAT, KATEEL_LNG];
-    const map = L.map(mapContainerRef.current).setView(center, 12);
-    mapRef.current = map;
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(map);
+      // Force Leaflet to recalculate size — fixes blank map
+      setTimeout(() => map.invalidateSize(), 100);
 
-    // Kateel temple — red marker
-    const redIcon = L.divIcon({
-      className: '',
-      html: '<div style="width:14px;height:14px;background:#dc2626;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
-    });
-    kateelMarkerRef.current = L.marker([KATEEL_LAT, KATEEL_LNG], { icon: redIcon })
-      .addTo(map)
-      .bindPopup(KATEEL_LABEL);
-
-    // Venue marker if already set
-    if (value?.lat) {
-      const blueIcon = L.divIcon({
+      // Kateel temple — red marker
+      const redIcon = L.divIcon({
         className: '',
-        html: '<div style="width:14px;height:14px;background:#2563eb;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
+        html: '<div style="width:14px;height:14px;background:#dc2626;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
+        iconSize: [14, 14], iconAnchor: [7, 7],
       });
-      venueMarkerRef.current = L.marker([value.lat, value.lng], { icon: blueIcon, draggable: true })
-        .addTo(map)
-        .bindPopup('Your Venue');
+      L.marker([KATEEL_LAT, KATEEL_LNG], { icon: redIcon }).addTo(map).bindPopup(KATEEL_LABEL);
 
-      venueMarkerRef.current.on('dragend', (e) => {
-        const { lat, lng } = e.target.getLatLng();
+      // Venue marker if already set
+      if (value?.lat) {
+        const blueIcon = L.divIcon({
+          className: '',
+          html: '<div style="width:14px;height:14px;background:#2563eb;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>',
+          iconSize: [14, 14], iconAnchor: [7, 7],
+        });
+        venueMarkerRef.current = L.marker([value.lat, value.lng], { icon: blueIcon, draggable: true })
+          .addTo(map).bindPopup('Your Venue');
+        venueMarkerRef.current.on('dragend', (e) => {
+          const { lat, lng } = e.target.getLatLng();
+          const dist = haversineKm(lat, lng, KATEEL_LAT, KATEEL_LNG);
+          nominatimReverse(lat, lng).then((r) => {
+            const addr = r.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setQuery(addr);
+            onChange({ address: addr, lat, lng, distance: dist });
+          }).catch(() => onChange({ ...value, lat, lng, distance: dist }));
+        });
+      }
+
+      // Click map to place venue
+      map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
         const dist = haversineKm(lat, lng, KATEEL_LAT, KATEEL_LNG);
-        onChange({ ...value, lat, lng, distance: dist });
+        placeVenueMarker(map, lat, lng);
+        nominatimReverse(lat, lng)
+          .then((r) => {
+            const addr = r.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setQuery(addr);
+            onChange({ address: addr, lat, lng, distance: dist });
+            toast.success(`📍 Venue set: ${addr.split(',').slice(0,2).join(',')}`);
+          })
+          .catch(() => onChange({ ...value, lat, lng, distance: dist }));
       });
-    }
-
-    // Click to place/move venue marker
-    map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      const dist = haversineKm(lat, lng, KATEEL_LAT, KATEEL_LNG);
-      placeVenueMarker(map, lat, lng);
-      nominatimReverse(lat, lng)
-        .then((r) => {
-          const addr = r.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-          setQuery(addr);
-          onChange({ address: addr, lat, lng, distance: dist });
-        })
-        .catch(() => onChange({ ...value, lat, lng, distance: dist }));
-    });
+    }, 50);
 
     return () => {
-      map.remove();
-      mapRef.current = null;
-      venueMarkerRef.current = null;
+      clearTimeout(timer);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        venueMarkerRef.current = null;
+      }
     };
   }, [showMap]);
 
@@ -174,7 +181,7 @@ export default function LocationPicker({ value, onChange }) {
     if (mapRef.current) placeVenueMarker(mapRef.current, lat, lng);
   };
 
-  // GPS current location
+  // GPS current location — fills search box but user can still change
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) { toast.error('Geolocation not supported.'); return; }
     setLocating(true);
@@ -186,11 +193,16 @@ export default function LocationPicker({ value, onChange }) {
         try {
           const r = await nominatimReverse(lat, lng);
           const address = r.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          // Fill the search box so user can see and edit it
           setQuery(address);
+          // Open map so user can verify/move the pin
+          setShowMap(true);
+          // Update parent — user can still change by searching or clicking map
           onChange({ address, lat, lng, distance: dist });
           if (mapRef.current) placeVenueMarker(mapRef.current, lat, lng);
-          toast.success(`Location detected — ${dist} km from Kateel Temple.`);
+          toast.success(`📍 Your location detected (${dist} km from Kateel). You can search a different venue above or click the map to change.`);
         } catch {
+          setQuery(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
           onChange({ address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng, distance: dist });
         }
         setLocating(false);
@@ -273,7 +285,7 @@ export default function LocationPicker({ value, onChange }) {
           <div ref={mapContainerRef} style={{ height: '300px', width: '100%' }} />
           <div className="p-3 bg-surface-container-low text-label-md text-on-surface-variant flex flex-wrap items-center gap-2">
             <span className="material-symbols-outlined text-sm text-primary">info</span>
-            Click on map to pin venue. Drag blue marker to adjust.
+            Click anywhere on map to set your <strong>event venue</strong>. Address + coordinates auto-filled.
             <span className="ml-auto flex items-center gap-3">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-600 inline-block" /> Kateel Temple</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-600 inline-block" /> Your Venue</span>
