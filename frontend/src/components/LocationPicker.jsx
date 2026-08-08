@@ -146,6 +146,21 @@ export default function LocationPicker({ value, onChange }) {
     if (mapRef.current) placeMarker(mapRef.current, lat, lng);
   };
 
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const results = await nominatimSearch(query);
+      if (results.length > 0) {
+        selectSuggestion(results[0]);
+        setShowMap(true);
+      } else {
+        toast.error('No location found. Try a different search.');
+      }
+    } catch { toast.error('Search failed. Try again.'); }
+    finally { setSearching(false); }
+  };
+
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) { toast.error('Geolocation not supported.'); return; }
     setLocating(true);
@@ -173,7 +188,9 @@ export default function LocationPicker({ value, onChange }) {
       <label className="text-label-lg text-primary block">Venue Location *</label>
       <div className="relative flex gap-2">
         <div className="relative flex-1">
-          <input className="input-field w-full" placeholder="Search venue address or landmark..." value={query} onChange={handleQueryChange} autoComplete="off" />
+          <input className="input-field w-full" placeholder="Search venue address or landmark..." value={query} onChange={handleQueryChange} autoComplete="off"
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
+          />
           {searching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}
           {suggestions.length > 0 && (
             <ul className="absolute z-50 top-full left-0 right-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
@@ -188,6 +205,13 @@ export default function LocationPicker({ value, onChange }) {
             </ul>
           )}
         </div>
+        {/* Search button */}
+        <button type="button" onClick={handleSearch} disabled={searching || !query.trim()}
+          title="Search location"
+          className="flex-shrink-0 flex items-center gap-1 px-4 py-2 bg-primary text-on-primary rounded-lg text-label-lg hover:bg-on-primary-fixed-variant transition-all disabled:opacity-50">
+          <span className="material-symbols-outlined text-[18px]">search</span>
+          <span className="hidden sm:inline">Search</span>
+        </button>
         <button type="button" onClick={handleCurrentLocation} disabled={locating} title="Use my current location"
           className="flex-shrink-0 flex items-center gap-1 px-4 py-2 bg-secondary-container text-primary rounded-lg text-label-lg hover:bg-primary hover:text-on-primary transition-all disabled:opacity-50">
           {locating ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /> : <span className="material-symbols-outlined text-[18px]">my_location</span>}
