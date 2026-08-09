@@ -191,6 +191,12 @@ export default function TeamPage() {
                   <input className="input-field" placeholder="+91 00000 00000" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
                 </div>
                 <div>
+                  <label className="text-label-lg text-on-surface-variant block mb-1">Role *</label>
+                  <select className="input-field" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+                    {ROLES.map((r) => <option key={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Age</label>
                   <input className="input-field" placeholder="25" type="number" min="10" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
                 </div>
