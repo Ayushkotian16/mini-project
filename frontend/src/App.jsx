@@ -29,6 +29,8 @@ import AdminTeam from './pages/admin/AdminTeam';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminContent from './pages/admin/AdminContent';
+import AdminBeats from './pages/admin/AdminBeats';
+import BeatsPage from './pages/BeatsPage';
 
 export default function App() {
   return (
@@ -61,6 +63,7 @@ export default function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/book" element={<BookingPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/beats" element={<BeatsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 
@@ -79,6 +82,7 @@ export default function App() {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/messages" element={<AdminMessages />} />
             <Route path="/admin/content" element={<AdminContent />} />
+            <Route path="/admin/beats" element={<AdminBeats />} />
           </Route>
         </Route>
       </Routes>

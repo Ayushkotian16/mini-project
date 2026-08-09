@@ -8,6 +8,7 @@ const ROLES = ['Chende Artist', 'Thala Artist', 'Base Artist', 'Tunner Artist', 
 const EMPTY_FORM = {
   name: '', role: 'Chende Artist', phone: '', age: '', yearsOfExperience: 0,
   experienceLevel: 'Intermediate', bio: '', imageUrl: '', status: 'active', performancesCompleted: 0,
+  order: 0,
   socialLinks: { facebook: '', instagram: '', youtube: '', whatsapp: '' },
 };
 const STATUS_COLORS = { active: 'bg-green-100 text-green-800', inactive: 'bg-gray-100 text-gray-600', pending: 'bg-yellow-100 text-yellow-800' };
@@ -25,7 +26,10 @@ export default function AdminTeam() {
     setLoading(true);
     const params = statusFilter ? { status: statusFilter } : {};
     teamAPI.getAll(params)
-      .then((r) => setMembers(r.data.members))
+      .then((r) => {
+        const sorted = (r.data.members || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setMembers(sorted);
+      })
       .catch(() => toast.error('Failed to load team.'))
       .finally(() => setLoading(false));
   };
@@ -80,6 +84,27 @@ export default function AdminTeam() {
       fetchMembers();
     } catch {
       toast.error('Failed to approve.');
+    }
+  };
+
+  const moveOrder = async (index, direction) => {
+    const sorted = [...members];
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= sorted.length) return;
+
+    const memberA = sorted[index];
+    const memberB = sorted[targetIndex];
+    const orderA = memberA.order ?? index;
+    const orderB = memberB.order ?? targetIndex;
+
+    try {
+      await Promise.all([
+        teamAPI.update(memberA._id, { order: orderB }),
+        teamAPI.update(memberB._id, { order: orderA }),
+      ]);
+      fetchMembers();
+    } catch {
+      toast.error('Failed to reorder.');
     }
   };
 
@@ -143,6 +168,10 @@ export default function AdminTeam() {
                   <label className="text-label-lg text-on-surface-variant block mb-1">Years of Experience</label>
                   <input className="input-field" type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
                 </div>
+                <div>
+                  <label className="text-label-lg text-on-surface-variant block mb-1">Display Order</label>
+                  <input className="input-field" type="number" min="0" value={form.order ?? 0} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} placeholder="0" />
+                </div>
                 <div className="md:col-span-2">
                   <ImageUploader
                     label="Member Photo"
@@ -204,7 +233,7 @@ export default function AdminTeam() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {members.map((m) => (
+          {members.map((m, index) => (
             <div key={m._id} className="card p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -218,7 +247,10 @@ export default function AdminTeam() {
                     <p className="text-label-lg text-on-surface-variant">{m.role}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${STATUS_COLORS[m.status]}`}>{m.status}</span>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${STATUS_COLORS[m.status]}`}>{m.status}</span>
+                  <span className="text-label-sm text-on-surface-variant">#{m.order ?? 0}</span>
+                </div>
               </div>
               <div className="space-y-2 mb-4 text-label-md text-on-surface-variant">
                 {m.yearsOfExperience > 0 && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">schedule</span>{m.yearsOfExperience} yrs experience</div>}
@@ -249,6 +281,23 @@ export default function AdminTeam() {
                 </div>
               )}
               <div className="flex gap-2 pt-4 border-t border-outline-variant">
+                {/* Up/Down reorder */}
+                <button
+                  onClick={() => moveOrder(index, -1)}
+                  disabled={index === 0}
+                  title="Move up"
+                  className="p-2 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30"
+                >
+                  <span className="material-symbols-outlined text-sm">arrow_upward</span>
+                </button>
+                <button
+                  onClick={() => moveOrder(index, 1)}
+                  disabled={index === members.length - 1}
+                  title="Move down"
+                  className="p-2 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30"
+                >
+                  <span className="material-symbols-outlined text-sm">arrow_downward</span>
+                </button>
                 {m.status === 'pending' && (
                   <button onClick={() => handleApprove(m._id)} className="flex-1 py-2 bg-green-600 text-white rounded-lg text-label-lg hover:bg-green-700 transition-all">Approve</button>
                 )}

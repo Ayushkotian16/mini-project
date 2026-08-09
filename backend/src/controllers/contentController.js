@@ -116,7 +116,7 @@ const getAllContent = async (req, res, next) => {
 const updateContent = async (req, res, next) => {
   try {
     const { section } = req.params;
-    const validSections = ['hero', 'about', 'contact_info', 'social_links', 'general', 'pricing', 'offers', 'owner', 'packages'];
+    const validSections = ['hero', 'about', 'contact_info', 'social_links', 'general', 'pricing', 'offers', 'owner', 'packages', 'beats'];
 
     if (!validSections.includes(section)) {
       return res.status(400).json({ success: false, message: 'Invalid content section.' });

@@ -103,4 +103,13 @@ export const paymentAPI = {
   verify: (data) => publicApi.post('/payments/verify', data),
 };
 
+// ── Beats ─────────────────────────────────────────────
+export const beatAPI = {
+  getAll: (params) => api.get('/beats', { params }),
+  getAllAdmin: () => api.get('/beats/admin/all'),
+  create: (data) => api.post('/beats', data),
+  update: (id, data) => api.put(`/beats/${id}`, data),
+  delete: (id) => api.delete(`/beats/${id}`),
+};
+
 export default api;

@@ -9,6 +9,7 @@ const navItems = [
   { to: '/admin/bookings', icon: 'event_note', label: 'Bookings' },
   { to: '/admin/events', icon: 'celebration', label: 'Events' },
   { to: '/admin/team', icon: 'group', label: 'Team Members' },
+  { to: '/admin/beats', icon: 'music_note', label: 'Beats' },
   { to: '/admin/reviews', icon: 'star', label: 'Reviews' },
   { to: '/admin/messages', icon: 'mail', label: 'Messages' },
   { to: '/admin/content', icon: 'edit_note', label: 'Edit Content' },

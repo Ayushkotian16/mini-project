@@ -42,7 +42,10 @@ export default function TeamPage() {
 
   useEffect(() => {
     teamAPI.getPublic()
-      .then((r) => setMembers(r.data.members))
+      .then((r) => {
+        const sorted = (r.data.members || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setMembers(sorted);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

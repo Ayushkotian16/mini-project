@@ -15,6 +15,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const beatRoutes = require('./routes/beatRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -62,6 +63,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/beats', beatRoutes);
 
 // 404 handler
 app.use((req, res) => {
