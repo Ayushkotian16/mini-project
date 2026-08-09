@@ -9,17 +9,22 @@ const LEVEL_COLORS = {
   Beginner: 'bg-secondary-container text-on-secondary-container',
 };
 
-// Build correct social URL from user input
+// Build correct social URL — auto-formats WhatsApp Indian numbers
 const buildSocialUrl = (platform, value) => {
-  if (!value) return null;
+  if (!value || value === '#') return null;
   const v = value.trim();
   if (v.startsWith('http://') || v.startsWith('https://')) return v;
   switch (platform) {
     case 'facebook':  return `https://facebook.com/${v}`;
     case 'instagram': return `https://instagram.com/${v}`;
     case 'youtube':   return `https://youtube.com/@${v}`;
-    case 'whatsapp':  return `https://wa.me/${v.replace(/\D/g, '')}`;
-    default:          return v;
+    case 'whatsapp': {
+      const digits = v.replace(/\D/g, '');
+      // Auto-add India country code if 10 digits
+      const num = digits.length === 10 ? `91${digits}` : digits;
+      return `https://wa.me/${num}`;
+    }
+    default: return v;
   }
 };
 
@@ -235,10 +240,10 @@ export default function TeamPage() {
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { key: 'instagram', icon: 'photo_camera', placeholder: 'Instagram username or URL' },
+                    { key: 'instagram', icon: 'photo_camera', placeholder: 'Instagram username e.g. nandini_chende' },
                     { key: 'facebook',  icon: 'facebook',     placeholder: 'Facebook username or URL' },
-                    { key: 'youtube',   icon: 'play_circle',  placeholder: 'YouTube channel or URL' },
-                    { key: 'whatsapp',  icon: 'chat',         placeholder: 'WhatsApp number (e.g. 919901933947)' },
+                    { key: 'youtube',   icon: 'play_circle',  placeholder: 'YouTube channel name or URL' },
+                    { key: 'whatsapp',  icon: 'chat',         placeholder: 'WhatsApp number e.g. 9874563211' },
                   ].map((s) => (
                     <div key={s.key} className="relative">
                       <span className="material-symbols-outlined absolute left-0 bottom-2 text-outline text-[18px]">{s.icon}</span>

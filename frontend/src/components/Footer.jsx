@@ -45,20 +45,35 @@ export default function Footer() {
               Preserving the thunderous legacy of Kateel's percussive arts. Experience the rhythm that defines our culture.
             </p>
             <div className="flex gap-3">
-              <a href={social.facebook || '#'} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
-                <span className="material-symbols-outlined text-xl">facebook</span>
-              </a>
-              <a href={social.instagram || '#'} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
-                <span className="material-symbols-outlined text-xl">photo_camera</span>
-              </a>
-              <a href={social.youtube || '#'} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
-                <span className="material-symbols-outlined text-xl">play_circle</span>
-              </a>
-              {social.whatsapp && social.whatsapp !== '#' && (
-                <a href={social.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
-                  <span className="material-symbols-outlined text-xl">chat</span>
-                </a>
-              )}
+              {(() => {
+                const buildUrl = (platform, v) => {
+                  if (!v || v === '#') return null;
+                  if (v.startsWith('http')) return v;
+                  if (platform === 'whatsapp') {
+                    const d = v.replace(/\D/g,'');
+                    return `https://wa.me/${d.length === 10 ? '91'+d : d}`;
+                  }
+                  if (platform === 'instagram') return `https://instagram.com/${v}`;
+                  if (platform === 'facebook') return `https://facebook.com/${v}`;
+                  if (platform === 'youtube') return `https://youtube.com/@${v}`;
+                  return v;
+                };
+                return [
+                  { key: 'facebook', icon: 'facebook', label: 'Facebook' },
+                  { key: 'instagram', icon: 'photo_camera', label: 'Instagram' },
+                  { key: 'youtube', icon: 'play_circle', label: 'YouTube' },
+                  { key: 'whatsapp', icon: 'chat', label: 'WhatsApp' },
+                ].map(({ key, icon, label }) => {
+                  const url = buildUrl(key, social[key]);
+                  if (!url) return null;
+                  return (
+                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={label}
+                      className="w-10 h-10 rounded-full border border-on-primary/30 flex items-center justify-center hover:bg-on-primary/10 transition-colors">
+                      <span className="material-symbols-outlined text-xl">{icon}</span>
+                    </a>
+                  );
+                });
+              })()}
             </div>
           </div>
 

@@ -7,16 +7,18 @@ const FOUNDER_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Ooft7
 
 export default function AboutPage() {
   const [about, setAbout] = useState(null);
+  const [loaded, setLoaded] = useState(false);
   const [contactInfo, setContactInfo] = useState({ phone: '+91 99019 33947', email: 'nandini.chende@gmail.com' });
   const [social, setSocial] = useState({ facebook: '', instagram: '', youtube: '', whatsapp: '' });
 
   useEffect(() => {
-    contentAPI.getSection('about').then((r) => setAbout(r.data.data)).catch(() => {});
-    // Load contact info — merge owner + contact_info, owner takes priority for phone
     Promise.all([
+      contentAPI.getSection('about'),
       contentAPI.getSection('contact_info'),
       contentAPI.getSection('owner'),
-    ]).then(([contactRes, ownerRes]) => {
+      contentAPI.getSection('social_links'),
+    ]).then(([aboutRes, contactRes, ownerRes, socialRes]) => {
+      setAbout(aboutRes.data.data);
       const c = contactRes.data.data || {};
       const o = ownerRes.data.data || {};
       setContactInfo({
@@ -25,13 +27,15 @@ export default function AboutPage() {
         email: c.email || o.email || 'nandini.chende@gmail.com',
         address: c.address || '',
       });
-    }).catch(() => {});
-    contentAPI.getSection('social_links').then((r) => { if (r.data.data) setSocial(r.data.data); }).catch(() => {});
+      if (socialRes.data.data) setSocial(socialRes.data.data);
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
   }, []);
 
   const data = about || {};
 
   return (
+    <div className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
     <>
       {/* Hero */}
       <section className="py-16 md:py-32 bg-surface-container-lowest">
@@ -115,14 +119,14 @@ export default function AboutPage() {
                   </a>
                 )}
                 {social.whatsapp && social.whatsapp !== '#' && (
-                  <a href={social.whatsapp} target="_blank" rel="noopener noreferrer"
+                  <a href={(() => { const d = social.whatsapp.replace(/\D/g,''); return `https://wa.me/${d.length===10?'91'+d:d}`; })()} target="_blank" rel="noopener noreferrer"
                     className="group flex items-center gap-2 px-5 py-3 rounded-full bg-green-100 text-green-700 hover:bg-green-600 hover:text-white transition-all">
                     <span className="material-symbols-outlined">chat</span>
                     <span className="text-label-lg font-semibold">WhatsApp</span>
                   </a>
                 )}
                 {social.instagram && social.instagram !== '#' && (
-                  <a href={social.instagram} target="_blank" rel="noopener noreferrer"
+                  <a href={social.instagram.startsWith('http') ? social.instagram : `https://instagram.com/${social.instagram}`} target="_blank" rel="noopener noreferrer"
                     className="group flex items-center gap-2 px-5 py-3 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-600 hover:text-white transition-all">
                     <span className="material-symbols-outlined">photo_camera</span>
                     <span className="text-label-lg font-semibold">Instagram</span>
@@ -159,5 +163,6 @@ export default function AboutPage() {
         </div>
       </section>
     </>
+    </div>
   );
 }
