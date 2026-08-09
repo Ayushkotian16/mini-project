@@ -2,14 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { teamAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import ImageUploader from '../components/ImageUploader';
+import { PageSkeleton } from '../components/SkeletonLoader';
 
-const LEVEL_COLORS = {
-  Expert: 'bg-primary text-on-primary',
-  Intermediate: 'bg-tertiary text-on-tertiary',
-  Beginner: 'bg-secondary-container text-on-secondary-container',
-};
-
-// Build correct social URL — auto-formats WhatsApp Indian numbers
+const ROLES = ['Chende Artist', 'Thala Artist', 'Base Artist', 'Tunner Artist', 'All Rounder'];
 const buildSocialUrl = (platform, value) => {
   if (!value || value === '#') return null;
   const v = value.trim();
@@ -70,6 +65,8 @@ export default function TeamPage() {
     }
   };
 
+  if (loading) return <PageSkeleton type="team" />;
+
   return (
     <>
       {/* Hero */}
@@ -86,11 +83,7 @@ export default function TeamPage() {
       {/* Team Grid — larger cards */}
       <section className="py-16 bg-surface">
         <div className="container-max">
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : members.length === 0 ? (
+          {members.length === 0 ? (
             <div className="text-center py-20 text-on-surface-variant">
               <span className="material-symbols-outlined text-6xl mb-4 block">group</span>
               <p className="text-body-lg">Team members coming soon.</p>
@@ -129,13 +122,7 @@ export default function TeamPage() {
                       {member.yearsOfExperience > 0 && (
                         <span className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-primary text-sm">schedule</span>
-                          {member.yearsOfExperience} yrs exp
-                        </span>
-                      )}
-                      {member.performancesCompleted > 0 && (
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-primary text-sm">verified</span>
-                          {member.performancesCompleted} shows
+                          {member.yearsOfExperience} yrs experience
                         </span>
                       )}
                     </div>
@@ -207,23 +194,6 @@ export default function TeamPage() {
                 <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Years of Experience</label>
                   <input className="input-field" placeholder="0" type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-label-lg text-on-surface-variant block mb-1">Role</label>
-                  <select className="input-field" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                    <option>Chende Artist</option>
-                    <option>Taala Artist</option>
-                    <option>Valamiri Player</option>
-                    <option>Support Staff</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-label-lg text-on-surface-variant block mb-1">Experience Level</label>
-                  <select className="input-field" value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}>
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Expert</option>
-                  </select>
                 </div>
               </div>
 

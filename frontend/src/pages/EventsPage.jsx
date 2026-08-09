@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { eventAPI } from '../services/api';
+import { PageSkeleton } from '../components/SkeletonLoader';
 
 const TABS = ['upcoming', 'past'];
 
@@ -15,6 +16,8 @@ export default function EventsPage() {
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
   }, [activeTab]);
+
+  if (loading) return <PageSkeleton type="events" />;
 
   return (
     <>

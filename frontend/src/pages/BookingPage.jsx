@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { bookingAPI, contentAPI, paymentAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import LocationPicker from '../components/LocationPicker';
+import { PageSkeleton } from '../components/SkeletonLoader';
 
 // Default packages — overridden by backend data
 const DEFAULT_PACKAGES = [
@@ -160,6 +161,7 @@ export default function BookingPage() {
   const [owner, setOwner] = useState({ name: 'Kiran Anchan', phone1: '', phone2: '' });
   const [paymentConfig, setPaymentConfig] = useState({ enabled: false, advancePercent: 20 });
   const [otpRequired, setOtpRequired] = useState(true);
+  const [pricingLoaded, setPricingLoaded] = useState(false);
 
   useEffect(() => {
     // Read offerId from URL (e.g. /book?offerId=ganesh123)
@@ -193,7 +195,7 @@ export default function BookingPage() {
           enabled: r.data.enabled && pr.data.advancePaymentEnabled !== false,
         });
       }).catch(() => setPaymentConfig(r.data));
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => setPricingLoaded(true));
   }, []);
 
   // Only apply the selected offer's discount; if none selected, no discount
@@ -344,6 +346,9 @@ export default function BookingPage() {
       setLoading(false);
     }
   };
+
+  // ── Skeleton while pricing loads ──
+  if (!pricingLoaded) return <PageSkeleton type="booking" />;
 
   // ── Payment screen (step 3) ──
   if (step === 3) {

@@ -3,9 +3,11 @@ import { teamAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import ImageUploader from '../../components/ImageUploader';
 
+const ROLES = ['Chende Artist', 'Thala Artist', 'Base Artist', 'Tunner Artist', 'All Rounder'];
+
 const EMPTY_FORM = {
   name: '', role: 'Chende Artist', phone: '', age: '', yearsOfExperience: 0,
-  experienceLevel: 'Beginner', bio: '', imageUrl: '', status: 'active', performancesCompleted: 0,
+  experienceLevel: 'Intermediate', bio: '', imageUrl: '', status: 'active', performancesCompleted: 0,
   socialLinks: { facebook: '', instagram: '', youtube: '', whatsapp: '' },
 };
 const STATUS_COLORS = { active: 'bg-green-100 text-green-800', inactive: 'bg-gray-100 text-gray-600', pending: 'bg-yellow-100 text-yellow-800' };
@@ -119,7 +121,9 @@ export default function AdminTeam() {
                 </div>
                 <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Role *</label>
-                  <input className="input-field" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required />
+                  <select className="input-field" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required>
+                    {ROLES.map((r) => <option key={r}>{r}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Phone</label>
@@ -130,12 +134,6 @@ export default function AdminTeam() {
                   <input className="input-field" type="number" min="10" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-label-lg text-on-surface-variant block mb-1">Experience Level</label>
-                  <select className="input-field" value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}>
-                    {['Beginner', 'Intermediate', 'Expert'].map((l) => <option key={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Status</label>
                   <select className="input-field" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                     {['active', 'inactive', 'pending'].map((s) => <option key={s}>{s}</option>)}
@@ -144,10 +142,6 @@ export default function AdminTeam() {
                 <div>
                   <label className="text-label-lg text-on-surface-variant block mb-1">Years of Experience</label>
                   <input className="input-field" type="number" min="0" value={form.yearsOfExperience} onChange={(e) => setForm({ ...form, yearsOfExperience: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-label-lg text-on-surface-variant block mb-1">Performances Completed</label>
-                  <input className="input-field" type="number" min="0" value={form.performancesCompleted} onChange={(e) => setForm({ ...form, performancesCompleted: e.target.value })} />
                 </div>
                 <div className="md:col-span-2">
                   <ImageUploader
@@ -227,8 +221,7 @@ export default function AdminTeam() {
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${STATUS_COLORS[m.status]}`}>{m.status}</span>
               </div>
               <div className="space-y-2 mb-4 text-label-md text-on-surface-variant">
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">verified</span>{m.experienceLevel} · {m.yearsOfExperience}y exp</div>
-                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">celebration</span>{m.performancesCompleted} performances</div>
+                {m.yearsOfExperience > 0 && <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">schedule</span>{m.yearsOfExperience} yrs experience</div>}
               </div>
               {/* Social links on admin card */}
               {m.socialLinks && Object.values(m.socialLinks).some(Boolean) && (
