@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { contentAPI } from '../services/api';
 
-const TEAM_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfOuxfduJkJ2EzLL_BARPFUoxsU1axaKsH_EZMjaOoUMjYJoKXDjfbkNm5BJCcbeTviiFR08M0YbbPs4EM_gSqX-2xesbcheBI_QF4abw5NzB0iYWhZlXjrJggHWm-e6yHgww0flVmZFL43aG04Lh97JGg6AYhJF9FTaYu93UR1tSPckEIAVknYqzCyziZJEBlFBw1rE7-cVQf3v2yJzzNeBVyS3fPGnVmERSjuwWp0kzHcCdEgJn_8NpoyChnpx2pyILdHWEiYZi9';
-const FOUNDER_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Ooft7EG8duViBq7XdYdFjuJUFJ6AVPkE9LZ8TobWGZcEQ6AYXOe0FyHH6-9aid8DGfuJIvFSa_18BOWx_MC5p4o3qvuJq7Ost2RW9B8F9xnsQmqzAy1F3xmj4_hnxMB72jva4w18HMGEdxDwKpxjFI7FqXm5uxlpz-WzYUkbBNEk-u5g-TaZyJ68mTKjwCGArwlLzzftdiYdBj3rdJuATUh68oQl83ISykDIjlg_rndsdr6uWqXYAz52nmZwp2YDCDcnWTlFjNBC';
-
 export default function AboutPage() {
   const [about, setAbout] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -32,10 +29,33 @@ export default function AboutPage() {
     }).catch(() => setLoaded(true));
   }, []);
 
+  // Show skeleton while loading — no blank screen, no placeholder images
+  if (!loaded) {
+    return (
+      <div className="animate-pulse">
+        <div className="py-16 md:py-32 bg-surface-container-lowest">
+          <div className="container-max grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-6">
+              <div className="h-6 bg-outline-variant/30 rounded-full w-32" />
+              <div className="h-12 bg-outline-variant/30 rounded-xl w-3/4" />
+              <div className="h-4 bg-outline-variant/30 rounded w-full" />
+              <div className="h-4 bg-outline-variant/30 rounded w-5/6" />
+              <div className="grid grid-cols-3 gap-4">
+                {[1,2,3].map(i => <div key={i} className="h-24 bg-outline-variant/30 rounded-2xl" />)}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-64 h-64 rounded-full bg-outline-variant/30" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const data = about || {};
 
   return (
-    <div className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
     <>
       {/* Hero */}
       <section className="py-16 md:py-32 bg-surface-container-lowest">
@@ -70,8 +90,8 @@ export default function AboutPage() {
               </Link>
             </div>
             <div className="flex justify-center">
-              <div className="w-full aspect-square max-w-[500px] rounded-full overflow-hidden border-8 border-secondary-container shadow-luminous">
-                <img src={data.teamImageUrl || TEAM_IMG} alt="Team performing" className="w-full h-full object-cover" />
+              <div className="w-full aspect-square max-w-[500px] rounded-full overflow-hidden border-8 border-secondary-container shadow-luminous bg-secondary-container">
+                {data.teamImageUrl && <img src={data.teamImageUrl} alt="Team performing" className="w-full h-full object-cover" />}
               </div>
             </div>
           </div>
@@ -83,8 +103,10 @@ export default function AboutPage() {
         <div className="container-max">
           <div className="bg-surface-container-lowest rounded-3xl p-8 md:p-16 shadow-luminous border border-outline-variant flex flex-col md:flex-row gap-12 items-center">
             <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
-              <div className="w-full h-full rounded-full border-4 border-primary p-2 overflow-hidden">
-                <img src={data.founderImageUrl || FOUNDER_IMG} alt={data.founderName || 'Kiran Anchan'} className="w-full h-full object-cover rounded-full" />
+              <div className="w-full h-full rounded-full border-4 border-primary p-2 overflow-hidden bg-secondary-container flex items-center justify-center">
+                {data.founderImageUrl
+                  ? <img src={data.founderImageUrl} alt={data.founderName || 'Founder'} className="w-full h-full object-cover rounded-full" />
+                  : <span className="material-symbols-outlined text-6xl text-primary/30">person</span>}
               </div>
             </div>
               <div className="space-y-5 text-center md:text-left flex-grow">
@@ -163,6 +185,5 @@ export default function AboutPage() {
         </div>
       </section>
     </>
-    </div>
   );
 }
