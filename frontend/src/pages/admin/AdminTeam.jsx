@@ -27,7 +27,7 @@ export default function AdminTeam() {
     const params = statusFilter ? { status: statusFilter } : {};
     teamAPI.getAll(params)
       .then((r) => {
-        const sorted = (r.data.members || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const sorted = (r.data.members || []).slice().sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
         setMembers(sorted);
       })
       .catch(() => toast.error('Failed to load team.'))
@@ -92,19 +92,22 @@ export default function AdminTeam() {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= sorted.length) return;
 
-    const memberA = sorted[index];
-    const memberB = sorted[targetIndex];
-    const orderA = memberA.order ?? index;
-    const orderB = memberB.order ?? targetIndex;
+    // Swap in local array first
+    const temp = sorted[index];
+    sorted[index] = sorted[targetIndex];
+    sorted[targetIndex] = temp;
 
+    // Reassign sequential order values 0,1,2,...
     try {
-      await Promise.all([
-        teamAPI.update(memberA._id, { order: orderB }),
-        teamAPI.update(memberB._id, { order: orderA }),
-      ]);
-      fetchMembers();
+      await Promise.all(
+        sorted.map((m, i) => teamAPI.update(m._id, { order: i }))
+      );
+      // Update local state immediately without refetch
+      setMembers(sorted.map((m, i) => ({ ...m, order: i })));
+      toast.success('Order updated.');
     } catch {
       toast.error('Failed to reorder.');
+      fetchMembers(); // revert to server state on error
     }
   };
 
@@ -282,22 +285,25 @@ export default function AdminTeam() {
               )}
               <div className="flex gap-2 pt-4 border-t border-outline-variant">
                 {/* Up/Down reorder */}
-                <button
-                  onClick={() => moveOrder(index, -1)}
-                  disabled={index === 0}
-                  title="Move up"
-                  className="p-2 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30"
-                >
-                  <span className="material-symbols-outlined text-sm">arrow_upward</span>
-                </button>
-                <button
-                  onClick={() => moveOrder(index, 1)}
-                  disabled={index === members.length - 1}
-                  title="Move down"
-                  className="p-2 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30"
-                >
-                  <span className="material-symbols-outlined text-sm">arrow_downward</span>
-                </button>
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => moveOrder(index, -1)}
+                    disabled={index === 0}
+                    title="Move up"
+                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30 text-label-sm flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">arrow_upward</span>
+                  </button>
+                  <span className="text-center text-label-sm text-on-surface-variant font-bold">#{index + 1}</span>
+                  <button
+                    onClick={() => moveOrder(index, 1)}
+                    disabled={index === members.length - 1}
+                    title="Move down"
+                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30 text-label-sm flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">arrow_downward</span>
+                  </button>
+                </div>
                 {m.status === 'pending' && (
                   <button onClick={() => handleApprove(m._id)} className="flex-1 py-2 bg-green-600 text-white rounded-lg text-label-lg hover:bg-green-700 transition-all">Approve</button>
                 )}
