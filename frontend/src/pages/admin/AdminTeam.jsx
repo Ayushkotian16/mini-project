@@ -92,22 +92,18 @@ export default function AdminTeam() {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= sorted.length) return;
 
-    // Swap in local array first
-    const temp = sorted[index];
-    sorted[index] = sorted[targetIndex];
-    sorted[targetIndex] = temp;
+    // Remove member from current position, insert at target position
+    const [moved] = sorted.splice(index, 1);
+    sorted.splice(targetIndex, 0, moved);
 
-    // Reassign sequential order values 0,1,2,...
+    // Reassign sequential order 0,1,2,... to all
     try {
-      await Promise.all(
-        sorted.map((m, i) => teamAPI.update(m._id, { order: i }))
-      );
-      // Update local state immediately without refetch
+      await Promise.all(sorted.map((m, i) => teamAPI.update(m._id, { order: i })));
       setMembers(sorted.map((m, i) => ({ ...m, order: i })));
       toast.success('Order updated.');
     } catch {
       toast.error('Failed to reorder.');
-      fetchMembers(); // revert to server state on error
+      fetchMembers();
     }
   };
 
@@ -283,26 +279,36 @@ export default function AdminTeam() {
                   )}
                 </div>
               )}
-              <div className="flex gap-2 pt-4 border-t border-outline-variant">
+              <div className="flex gap-2 pt-4 border-t border-outline-variant items-center">
                 {/* Up/Down reorder */}
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => moveOrder(index, -1)}
-                    disabled={index === 0}
-                    title="Move up"
-                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30 text-label-sm flex items-center gap-1"
-                  >
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  <button onClick={() => moveOrder(index, -1)} disabled={index === 0} title="Move up"
+                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30">
                     <span className="material-symbols-outlined text-sm">arrow_upward</span>
                   </button>
                   <span className="text-center text-label-sm text-on-surface-variant font-bold">#{index + 1}</span>
-                  <button
-                    onClick={() => moveOrder(index, 1)}
-                    disabled={index === members.length - 1}
-                    title="Move down"
-                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30 text-label-sm flex items-center gap-1"
-                  >
+                  <button onClick={() => moveOrder(index, 1)} disabled={index === members.length - 1} title="Move down"
+                    className="px-2 py-1 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-secondary-container hover:text-primary transition-all disabled:opacity-30">
                     <span className="material-symbols-outlined text-sm">arrow_downward</span>
                   </button>
+                </div>
+                {/* Jump to position */}
+                <div className="flex-shrink-0 flex flex-col gap-1">
+                  <label className="text-[10px] text-on-surface-variant text-center">Move to</label>
+                  <select className="input-field text-label-sm py-1 px-2 w-16"
+                    value={index + 1}
+                    onChange={(e) => {
+                      const newPos = Number(e.target.value) - 1;
+                      if (newPos === index) return;
+                      const sorted = [...members];
+                      const [moved] = sorted.splice(index, 1);
+                      sorted.splice(newPos, 0, moved);
+                      Promise.all(sorted.map((m, i) => teamAPI.update(m._id, { order: i })))
+                        .then(() => setMembers(sorted.map((m, i) => ({ ...m, order: i }))))
+                        .catch(() => { toast.error('Failed.'); fetchMembers(); });
+                    }}>
+                    {members.map((_, i) => <option key={i} value={i + 1}>#{i + 1}</option>)}
+                  </select>
                 </div>
                 {m.status === 'pending' && (
                   <button onClick={() => handleApprove(m._id)} className="flex-1 py-2 bg-green-600 text-white rounded-lg text-label-lg hover:bg-green-700 transition-all">Approve</button>
