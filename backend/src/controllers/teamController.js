@@ -5,7 +5,8 @@ const TeamMember = require('../models/TeamMember');
 // @access  Public
 const getTeamMembers = async (req, res, next) => {
   try {
-    const members = await TeamMember.find({ status: 'active' }).sort({ joinedDate: 1 });
+    // Sort by order ascending — lower order = shown first on public page
+    const members = await TeamMember.find({ status: 'active' }).sort({ order: 1, joinedDate: 1 });
     res.status(200).json({ success: true, members });
   } catch (error) {
     next(error);
@@ -47,6 +48,11 @@ const getTeamMemberById = async (req, res, next) => {
 // @access  Private
 const createTeamMember = async (req, res, next) => {
   try {
+    // If no order specified, put new member at the bottom
+    if (req.body.order === undefined || req.body.order === null) {
+      const count = await TeamMember.countDocuments();
+      req.body.order = count;
+    }
     const member = await TeamMember.create(req.body);
     res.status(201).json({ success: true, message: 'Team member added.', member });
   } catch (error) {
@@ -92,7 +98,9 @@ const deleteTeamMember = async (req, res, next) => {
 // @access  Public
 const applyToJoin = async (req, res, next) => {
   try {
-    const member = await TeamMember.create({ ...req.body, status: 'pending' });
+    // New applicants get high order number so they appear at bottom until admin promotes them
+    const count = await TeamMember.countDocuments();
+    const member = await TeamMember.create({ ...req.body, status: 'pending', order: count + 100 });
     res.status(201).json({
       success: true,
       message: 'Application submitted successfully. We will review and contact you.',
