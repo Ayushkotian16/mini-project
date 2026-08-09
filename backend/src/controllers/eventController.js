@@ -11,6 +11,12 @@ const getEvents = async (req, res, next) => {
     if (category) filter.category = category;
     if (showOnHome === 'true') filter.showOnHome = true;
 
+    // Auto-update upcoming events that have passed to 'past'
+    await Event.updateMany(
+      { status: 'upcoming', date: { $lt: new Date() } },
+      { $set: { status: 'past' } }
+    );
+
     const events = await Event.find(filter).sort({ date: -1 });
     res.status(200).json({ success: true, events });
   } catch (error) {

@@ -100,29 +100,66 @@ export default function HomePage() {
   const [reviews, setReviews] = useState([]);
   const [content, setContent] = useState(null);
   const [activeOffers, setActiveOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       eventAPI.getAll({ showOnHome: 'true' }),
       eventAPI.getAll({ status: 'past' }),
-    ]).then(([homeRes, pastRes]) => {
+      eventAPI.getAll({ status: 'upcoming' }),
+      reviewAPI.getApproved(),
+      contentAPI.getAll(),
+      bookingAPI.getPricing(),
+    ]).then(([homeRes, pastRes, upcomingRes, reviewRes, contentRes, pricingRes]) => {
       const homeEvents = homeRes.data.events || [];
       const pastEvents = pastRes.data.events || [];
+      const upcomingEvents = upcomingRes.data.events || [];
       const ids = new Set(homeEvents.map((e) => e._id));
-      const merged = [...homeEvents, ...pastEvents.filter((e) => !ids.has(e._id))];
+      // Merge: home-pinned first, then upcoming, then past (no duplicates), max 6
+      const merged = [
+        ...homeEvents,
+        ...upcomingEvents.filter((e) => !ids.has(e._id)),
+        ...pastEvents.filter((e) => !ids.has(e._id)),
+      ];
       setEvents(merged.slice(0, 6));
-    }).catch(() => {});
-
-    reviewAPI.getApproved().then((r) => setReviews(r.data.reviews.slice(0, 3))).catch(() => {});
-    contentAPI.getAll().then((r) => setContent(r.data.content)).catch(() => {});
-
-    bookingAPI.getPricing().then((r) => {
-      setActiveOffers(r.data.activeOffers || []);
-    }).catch(() => {});
+      setReviews((reviewRes.data.reviews || []).slice(0, 3));
+      setContent(contentRes.data.content);
+      setActiveOffers(pricingRes.data.activeOffers || []);
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const hero = content?.hero || {};
   const about = content?.about || {};
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        {/* Hero skeleton */}
+        <section className="min-h-[60vh] flex flex-col items-center justify-center gap-6 py-20 bg-surface-container-lowest">
+          <div className="w-40 h-40 rounded-full bg-outline-variant/30" />
+          <div className="h-10 bg-outline-variant/30 rounded-xl w-64" />
+          <div className="h-4 bg-outline-variant/30 rounded w-96 max-w-full" />
+          <div className="h-4 bg-outline-variant/30 rounded w-80 max-w-full" />
+          <div className="flex gap-4"><div className="h-12 w-32 bg-outline-variant/30 rounded-full" /><div className="h-12 w-36 bg-outline-variant/30 rounded-full" /></div>
+        </section>
+        {/* Stats skeleton */}
+        <section className="py-16 bg-surface-container-low border-y border-outline-variant">
+          <div className="container-max grid grid-cols-3 gap-6">
+            {[1,2,3].map(i => <div key={i} className="h-20 bg-outline-variant/30 rounded-2xl" />)}
+          </div>
+        </section>
+        {/* Events skeleton */}
+        <section className="py-24 bg-surface">
+          <div className="container-max">
+            <div className="h-8 bg-outline-variant/30 rounded w-48 mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1,2,3].map(i => <div key={i} className="h-40 bg-outline-variant/30 rounded-2xl" />)}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -234,6 +271,7 @@ export default function HomePage() {
                   <div className="p-6">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
                       <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md">{event.category}</span>
+                      {event.status === 'upcoming' && <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-label-md font-semibold">Upcoming</span>}
                       <span className="text-label-md text-on-surface-variant">{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     </div>
                     <h3 className="text-headline-sm font-bold text-on-surface mb-2">{event.title}</h3>
